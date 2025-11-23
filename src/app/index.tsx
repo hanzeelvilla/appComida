@@ -1,17 +1,47 @@
 import {
   StyleSheet,
-  Text,
   View,
   ActivityIndicator,
   FlatList,
-  Image,
   StatusBar,
+  Text,
 } from "react-native";
+import { useEffect, useState, useMemo } from "react";
 import { useMenu } from "../hooks/useMenu";
 import { FoodCard } from "../components/FoodCard";
+import { SearchBar } from "../components/SearchBar";
+import { CategoryFilter } from "../components/CategoryFilter";
+import { MenuItem } from "../interfaces/menu.interface";
 
 export default function App() {
   const { menu, loading } = useMenu();
+
+  const [searchText, setSearchText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [filteredMenu, setFilteredMenu] = useState<MenuItem[]>([]);
+
+  const categories = useMemo(() => {
+    const allCategories = menu.map((item) => item.category);
+    return [...new Set(allCategories)];
+  }, [menu]);
+
+  useEffect(() => {
+    let result = menu;
+
+    if (selectedCategory !== "Todos") {
+      result = result.filter((item) => item.category === selectedCategory);
+    }
+
+    if (searchText) {
+      const textData = searchText.toUpperCase();
+      result = result.filter((item) => {
+        const itemData = item.name ? item.name.toUpperCase() : "".toUpperCase();
+        return itemData.includes(textData);
+      });
+    }
+
+    setFilteredMenu(result);
+  }, [menu, searchText, selectedCategory]);
 
   if (loading)
     return (
@@ -23,12 +53,28 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
+
+      <SearchBar value={searchText} onChangeText={setSearchText} />
+
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelect={setSelectedCategory}
+      />
+
       <FlatList
-        data={menu}
+        data={filteredMenu}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <FoodCard item={item} />}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No hay resultados para "{searchText}" en {selectedCategory}
+            </Text>
+          </View>
+        }
       />
     </View>
   );
@@ -47,58 +93,17 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingTop: 8,
     paddingBottom: 50,
   },
-  card: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    marginBottom: 16,
-    padding: 12,
-    flexDirection: "row",
+  emptyContainer: {
     alignItems: "center",
-
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-
-    elevation: 3,
+    marginTop: 50,
+    paddingHorizontal: 20,
   },
-  image: {
-    width: 90,
-    height: 90,
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-  },
-  infoContainer: {
-    flex: 1,
-    marginLeft: 16,
-    height: 90,
-    justifyContent: "space-between",
-  },
-  categoryBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "#FFF0ED",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 6,
-  },
-  categoryText: {
-    color: "#FF6347",
-    fontSize: 10,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-  },
-  name: {
+  emptyText: {
     fontSize: 16,
-    fontWeight: "700",
-    color: "#1A1A1A",
-    lineHeight: 20,
-  },
-  price: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#2E8B57",
+    color: "#888",
+    textAlign: "center",
   },
 });

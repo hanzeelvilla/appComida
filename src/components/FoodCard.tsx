@@ -1,18 +1,39 @@
-import { View, Text, Image, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, Image, StyleSheet, Pressable } from "react-native";
 import { MenuItem } from "../interfaces/menu.interface";
+import { Ionicons } from "@expo/vector-icons";
+import { useLikes } from "../context/Likes.context";
 
 interface FoodCardProps {
   item: MenuItem;
 }
 
 export const FoodCard = ({ item }: FoodCardProps) => {
+  const { toggleLike, isLiked } = useLikes();
+  const liked = isLiked(item.id);
+
   return (
     <View style={styles.card}>
-      <Image
-        source={{ uri: item.image }}
-        style={styles.image}
-        resizeMode="cover"
-      />
+      <View>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <Pressable
+          onPress={() => toggleLike(item)}
+          style={({ pressed }) => [
+            styles.likeButton,
+            pressed && styles.buttonPressed,
+          ]}
+        >
+          <Ionicons
+            name={liked ? "heart" : "heart-outline"}
+            size={20}
+            color={liked ? "#FF6347" : "#FFFFFF"}
+          />
+        </Pressable>
+      </View>
 
       <View style={styles.infoContainer}>
         <View>
@@ -39,7 +60,6 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: "row",
     alignItems: "center",
-    // Sombras
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -51,6 +71,20 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 12,
     backgroundColor: "#f0f0f0",
+  },
+  likeButton: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: 15,
+    padding: 4,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  buttonPressed: {
+    opacity: 0.7,
+    transform: [{ scale: 0.9 }],
   },
   infoContainer: {
     flex: 1,
