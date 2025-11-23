@@ -1,54 +1,37 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-  FlatList,
-  Image,
-  StatusBar,
-} from "react-native";
-import { useMenu } from "../hooks/useMenu";
-import { FoodCard } from "../components/FoodCard";
+import { View, Text, Image, StyleSheet } from "react-native";
+import { MenuItem } from "../interfaces/menu.interface";
 
-export default function App() {
-  const { menu, loading } = useMenu();
-
-  if (loading)
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#FF6347" />
-      </View>
-    );
-
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <FlatList
-        data={menu}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <FoodCard item={item} />}
-      />
-    </View>
-  );
+interface FoodCardProps {
+  item: MenuItem;
 }
 
+export const FoodCard = ({ item }: FoodCardProps) => {
+  return (
+    <View style={styles.card}>
+      <Image
+        source={{ uri: item.image }}
+        style={styles.image}
+        resizeMode="cover"
+      />
+
+      <View style={styles.infoContainer}>
+        <View>
+          <View style={styles.categoryBadge}>
+            <Text style={styles.categoryText}>{item.category}</Text>
+          </View>
+
+          <Text style={styles.name} numberOfLines={2}>
+            {item.name}
+          </Text>
+        </View>
+
+        <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+      </View>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F2F2F2",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F2F2F2",
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 50,
-  },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
@@ -56,12 +39,11 @@ const styles = StyleSheet.create({
     padding: 12,
     flexDirection: "row",
     alignItems: "center",
-
+    // Sombras
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-
     elevation: 3,
   },
   image: {

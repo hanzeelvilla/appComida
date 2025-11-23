@@ -15,7 +15,7 @@ export const useMenu = () => {
     try {
       const data = await getMenu();
       setMenu(data);
-      console.log(data);
+      //console.log(data);
     } catch (error) {
       console.error("Error loading menu:", error);
     } finally {
